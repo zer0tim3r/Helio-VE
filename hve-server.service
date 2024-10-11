@@ -1,0 +1,18 @@
+[Unit]
+Description=HVE guests
+After=network.target
+Wants=network-online.target
+
+[Service]
+Restart=always
+Type=simple
+PIDFile=/opt/helio-ve/var/main.pid
+ExecStart=/opt/helio-ve/bin/main
+ExecStop=kill -s SIGEXIT $(cat /opt/helio-ve/var/main.pid)
+Environment='PORT=8080'
+
+[Install]
+WantedBy=multi-user.target
+Alias=helio-ve.service 
+
+# /etc/systemd/system/hve-manager.service
