@@ -1,7 +1,5 @@
 use crate::common;
 
-
-
 pub fn create_instance(id: &str, cpus: i32, memory: i32, iso_path: &str) {
 	let image_path = format!("/var/run/qemu/disks/{}.qcow2", id);
 
