@@ -15,6 +15,7 @@ pub struct Instance {
     pub params: serde_json::Value,
 
 
+    pub created_by: i32,
     pub created_at: Timestamptz,
     pub updated_at: Timestamptz,
 }
@@ -27,8 +28,7 @@ pub struct NewInstance {
     pub label: Option<String>,
     pub params: serde_json::Value,
 
-    pub created_at: Timestamptz,
-    pub updated_at: Timestamptz,
+    pub created_by: i32,
 }
 
 impl Instance {
