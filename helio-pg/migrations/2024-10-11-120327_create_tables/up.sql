@@ -7,7 +7,7 @@ CREATE TABLE "user" (
     password VARCHAR(256) NOT NULL,
     salt VARCHAR(64) NOT NULL,
 
-    CRUD JSONB NOT NULL,
+    crud JSONB NOT NULL,
 
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
