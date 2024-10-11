@@ -1,14 +1,23 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+use diesel::r2d2::{ConnectionManager, Pool};
+use diesel::PgConnection;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+pub mod models;
+mod schema;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+pub type DBPool = Pool<ConnectionManager<PgConnection>>;
+pub type Timestamp = chrono::NaiveDateTime;
+pub type Timestamptz = chrono::DateTime<chrono::Utc>;
+
+pub struct PGClient(pub DBPool);
+
+impl PGClient {
+    pub fn new(database_url: String) -> Self {
+        let manager = ConnectionManager::<PgConnection>::new(database_url);
+        let pool = Pool::builder()
+            .max_size(1)
+            .build(manager)
+            .expect("Failed to create pool.");
+
+        PGClient(pool)
     }
 }
