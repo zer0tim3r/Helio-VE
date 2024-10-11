@@ -12,19 +12,31 @@ pub struct Instance {
     pub uuid: String,
 
     pub label: Option<String>,
-    pub params: String,
+    pub params: serde_json::Value,
 
 
     pub created_at: Timestamptz,
     pub updated_at: Timestamptz,
 }
 
-impl Virtual_Instance {
-    pub fn _rpc_create(conn: &mut PgConnection, input: NewUser) -> QueryResult<User> {
-        use crate::schema::users::dsl as c;
-        let result = diesel::insert_into(c::users)
+#[derive(Insertable)]
+#[diesel(table_name = instance)]
+pub struct NewInstance {
+    pub uuid: String,
+
+    pub label: Option<String>,
+    pub params: serde_json::Value,
+
+    pub created_at: Timestamptz,
+    pub updated_at: Timestamptz,
+}
+
+impl Instance {
+    pub fn _rpc_create(conn: &mut PgConnection, input: NewInstance) -> QueryResult<Instance> {
+        use crate::schema::instance::dsl::*;
+        let result = diesel::insert_into(instance)
             .values(&input)
-            .get_result::<User>(conn);
+            .get_result::<Instance>(conn);
         result
     }
 }

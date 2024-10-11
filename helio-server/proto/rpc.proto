@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+// import "google/protobuf/timestamp.proto";
+
+package rpc;
+
+service Helio {
+    rpc CreateInstance (CreateInstanceArgs) returns (google.protobuf.Empty);
+}
+
+message CreateInstanceArgs {
+    string uuid = 1;
+    optional string label = 2;
+}
