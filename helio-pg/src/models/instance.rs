@@ -1,5 +1,5 @@
-use crate::schema::{instance};
-use crate::{Timestamptz};
+use crate::schema::instance;
+use crate::Timestamptz;
 use diesel::prelude::*;
 // use macros::DefaultQuery;
 

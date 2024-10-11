@@ -1,6 +1,6 @@
 use crate::common;
 
-pub fn create_instance(id: &str, cpus: i32, memory: i32, iso_path: &str) {
+pub fn start_instance(id: &str, cpus: i32, memory: i32, iso_path: &str) -> bool {
 	let image_path = format!("/var/run/qemu/disks/{}.qcow2", id);
 
     let output = common::create_process("/usr/libexec/qemu-kvm", vec![
@@ -23,11 +23,10 @@ pub fn create_instance(id: &str, cpus: i32, memory: i32, iso_path: &str) {
     ]);
 
     // 명령어 실행 결과를 UTF-8로 변환하여 출력
-    if output.status.success() {
-        let stdout = String::from_utf8_lossy(&output.stdout);
-        println!("Output:\n{}", stdout);
-    } else {
+    if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         eprintln!("Error:\n{}", stderr);
     }
+
+	output.status.success()
 }
