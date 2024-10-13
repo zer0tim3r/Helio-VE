@@ -129,7 +129,6 @@ async fn main() -> std::io::Result<()> {
 sudo firewall-cmd --permanent --new-zone=helio
 sudo firewall-cmd --permanent --zone=helio --change-interface=br0
 sudo firewall-cmd --permanent --zone=helio --add-port=67/udp
-sudo firewall-cmd --permanent --zone=helio --add-port=68/udp
 sudo firewall-cmd --permanent --zone=helio --add-masquerade
 sudo firewall-cmd --permanent --zone=helio --add-forward
 sudo firewall-cmd --permanent --zone=public --add-forward
