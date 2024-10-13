@@ -2,6 +2,7 @@ use dhcproto::v4::{DhcpOption, Message, MessageType, Opcode, OptionCode};
 use dhcproto::{Decodable, Decoder, Encodable, Encoder};
 use std::collections::HashMap;
 use std::net::{Ipv4Addr, UdpSocket};
+use std::os::fd::AsRawFd;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -9,7 +10,7 @@ async fn main() -> std::io::Result<()> {
     let mut ip_pool = HashMap::new(); // 클라이언트 IP 할당을 위한 IP 풀
 
     // UDP 소켓 생성 (DHCP 서버는 67번 포트를 사용)
-    let socket = UdpSocket::bind("0.0.0.0:67")?;
+    let socket = UdpSocket::bind("192.168.10.254:67")?;
     socket.set_broadcast(true)?;
 
     loop {
