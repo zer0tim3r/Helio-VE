@@ -17,10 +17,8 @@ async fn main() -> std::io::Result<()> {
 
     loop {
         let mut buf = [0u8; 1024];
-        let (amt, mut src) = socket.recv_from(&mut buf)?;
-        println!("src : {}", src);
-        src.set_ip(std::net::IpAddr::V4(Ipv4Addr::new(255, 255, 255, 255)));
-        println!("src : {}", src);
+        let (amt, _) = socket.recv_from(&mut buf)?;
+        let broadcast =  core::net::SocketAddr::new(std::net::IpAddr::V4(Ipv4Addr::new(255, 255, 255, 255)), 68);
 
         // 수신한 DHCP 메시지를 파싱
         if let Ok(dhcp_message) = Message::decode(&mut Decoder::new(&buf[..amt])) {
@@ -77,7 +75,7 @@ async fn main() -> std::io::Result<()> {
                             offer_message
                                 .encode(&mut Encoder::new(&mut offer_buf))
                                 .unwrap();
-                            socket.send_to(&offer_buf, src)?;
+                            socket.send_to(&offer_buf, broadcast)?;
                         } else {
                             println!("MAC 주소가 허용되지 않았습니다. 응답을 무시합니다.");
                         }
@@ -105,6 +103,9 @@ async fn main() -> std::io::Result<()> {
                                 ack_message.opts_mut().insert(DhcpOption::SubnetMask(
                                     Ipv4Addr::new(255, 255, 255, 0),
                                 ));
+                                ack_message.opts_mut().insert(DhcpOption::Router(
+                                    vec!(Ipv4Addr::new(192, 168, 10, 254)),
+                                ));
                                 ack_message
                                     .opts_mut()
                                     .insert(DhcpOption::AddressLeaseTime(3600u32));
@@ -112,7 +113,7 @@ async fn main() -> std::io::Result<()> {
                                 // DHCP ACK 메시지를 클라이언트로 전송
                                 let mut ack_buf = Vec::new();
                                 ack_message.encode(&mut Encoder::new(&mut ack_buf)).unwrap();
-                                socket.send_to(&ack_buf, src)?;
+                                socket.send_to(&ack_buf, broadcast)?;
                             }
                         } else {
                             println!(
