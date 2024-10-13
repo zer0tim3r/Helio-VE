@@ -16,6 +16,8 @@ async fn main() -> std::io::Result<()> {
         let mut buf = [0u8; 1024];
         let (amt, src) = socket.recv_from(&mut buf)?;
 
+        println!("src : {}", src);
+
         // 수신한 DHCP 메시지를 파싱
         if let Ok(dhcp_message) = Message::decode(&mut Decoder::new(&buf[..amt])) {
             let client_mac = format!("{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
@@ -97,6 +99,10 @@ sudo firewall-cmd --permanent --zone=helio --change-interface=br0
 sudo firewall-cmd --permanent --zone=helio --add-port=67/udp 
 sudo firewall-cmd --permanent --zone=helio --add-port=68/udp 
 sudo firewall-cmd --permanent --zone=helio --add-masquerade
+sudo firewall-cmd --permanent --zone=helio --add-forward
 sudo firewall-cmd --permanent --zone=public --add-forward
 sudo firewall-cmd --reload
+
+sudo ip link set br0 promisc on
+sudo ip link set tap0 promisc on
 */
