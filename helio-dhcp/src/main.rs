@@ -1,7 +1,7 @@
-use dhcproto::v4::{Message, Opcode, MessageType, OptionCode, DhcpOption};
+use dhcproto::v4::{DhcpOption, Message, MessageType, Opcode, OptionCode};
 use dhcproto::{Decodable, Decoder, Encodable, Encoder};
-use std::net::{UdpSocket, Ipv4Addr};
 use std::collections::HashMap;
+use std::net::{Ipv4Addr, UdpSocket};
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
@@ -14,18 +14,28 @@ async fn main() -> std::io::Result<()> {
 
     loop {
         let mut buf = [0u8; 1024];
-        let (amt, src) = socket.recv_from(&mut buf)?;
+        let (amt, mut src) = socket.recv_from(&mut buf)?;
+
+        src.set_ip(std::net::IpAddr::V4(Ipv4Addr::new(255, 255, 255, 255)));
 
         println!("src : {}", src);
 
         // 수신한 DHCP 메시지를 파싱
         if let Ok(dhcp_message) = Message::decode(&mut Decoder::new(&buf[..amt])) {
-            let client_mac = format!("{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
-                dhcp_message.chaddr()[0], dhcp_message.chaddr()[1], dhcp_message.chaddr()[2],
-                dhcp_message.chaddr()[3], dhcp_message.chaddr()[4], dhcp_message.chaddr()[5]);
+            let client_mac = format!(
+                "{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
+                dhcp_message.chaddr()[0],
+                dhcp_message.chaddr()[1],
+                dhcp_message.chaddr()[2],
+                dhcp_message.chaddr()[3],
+                dhcp_message.chaddr()[4],
+                dhcp_message.chaddr()[5]
+            );
 
             // DHCP Discover 메시지에만 응답
-            if let Some(DhcpOption::MessageType(message_type)) = dhcp_message.opts().get(OptionCode::MessageType) {
+            if let Some(DhcpOption::MessageType(message_type)) =
+                dhcp_message.opts().get(OptionCode::MessageType)
+            {
                 match message_type {
                     MessageType::Discover => {
                         println!("Received DHCP Discover from MAC: {}", client_mac);
@@ -45,14 +55,26 @@ async fn main() -> std::io::Result<()> {
                             offer_message.set_yiaddr(offered_ip);
                             offer_message.set_chaddr(dhcp_message.chaddr());
 
-                            offer_message.opts_mut().insert(DhcpOption::MessageType(MessageType::Offer));
-                            offer_message.opts_mut().insert(DhcpOption::ServerIdentifier(Ipv4Addr::new(192, 168, 10, 254)));
-                            offer_message.opts_mut().insert(DhcpOption::SubnetMask(Ipv4Addr::new(255, 255, 255, 0)));
-                            offer_message.opts_mut().insert(DhcpOption::AddressLeaseTime(3600u32));
+                            offer_message
+                                .opts_mut()
+                                .insert(DhcpOption::MessageType(MessageType::Offer));
+                            offer_message
+                                .opts_mut()
+                                .insert(DhcpOption::ServerIdentifier(Ipv4Addr::new(
+                                    192, 168, 10, 254,
+                                )));
+                            offer_message
+                                .opts_mut()
+                                .insert(DhcpOption::SubnetMask(Ipv4Addr::new(255, 255, 255, 0)));
+                            offer_message
+                                .opts_mut()
+                                .insert(DhcpOption::AddressLeaseTime(3600u32));
 
                             // DHCP Offer 메시지를 클라이언트로 전송
                             let mut offer_buf = Vec::new();
-                            offer_message.encode(&mut Encoder::new(&mut offer_buf)).unwrap();
+                            offer_message
+                                .encode(&mut Encoder::new(&mut offer_buf))
+                                .unwrap();
                             socket.send_to(&offer_buf, src)?;
                         } else {
                             println!("MAC 주소가 허용되지 않았습니다. 응답을 무시합니다.");
@@ -72,10 +94,18 @@ async fn main() -> std::io::Result<()> {
                                 ack_message.set_yiaddr(*allocated_ip);
                                 ack_message.set_chaddr(dhcp_message.chaddr());
 
-                                ack_message.opts_mut().insert(DhcpOption::MessageType(MessageType::Ack));
-                                ack_message.opts_mut().insert(DhcpOption::ServerIdentifier(Ipv4Addr::new(192, 168, 10, 254)));
-                                ack_message.opts_mut().insert(DhcpOption::SubnetMask(Ipv4Addr::new(255, 255, 255, 0)));
-                                ack_message.opts_mut().insert(DhcpOption::AddressLeaseTime(3600u32));
+                                ack_message
+                                    .opts_mut()
+                                    .insert(DhcpOption::MessageType(MessageType::Ack));
+                                ack_message.opts_mut().insert(DhcpOption::ServerIdentifier(
+                                    Ipv4Addr::new(192, 168, 10, 254),
+                                ));
+                                ack_message.opts_mut().insert(DhcpOption::SubnetMask(
+                                    Ipv4Addr::new(255, 255, 255, 0),
+                                ));
+                                ack_message
+                                    .opts_mut()
+                                    .insert(DhcpOption::AddressLeaseTime(3600u32));
 
                                 // DHCP ACK 메시지를 클라이언트로 전송
                                 let mut ack_buf = Vec::new();
@@ -83,7 +113,9 @@ async fn main() -> std::io::Result<()> {
                                 socket.send_to(&ack_buf, src)?;
                             }
                         } else {
-                            println!("MAC 주소가 허용되지 않았습니다. DHCP Request 응답을 무시합니다.");
+                            println!(
+                                "MAC 주소가 허용되지 않았습니다. DHCP Request 응답을 무시합니다."
+                            );
                         }
                     }
                     _ => {}
@@ -96,8 +128,8 @@ async fn main() -> std::io::Result<()> {
 /*
 sudo firewall-cmd --permanent --new-zone=helio
 sudo firewall-cmd --permanent --zone=helio --change-interface=br0
-sudo firewall-cmd --permanent --zone=helio --add-port=67/udp 
-sudo firewall-cmd --permanent --zone=helio --add-port=68/udp 
+sudo firewall-cmd --permanent --zone=helio --add-port=67/udp
+sudo firewall-cmd --permanent --zone=helio --add-port=68/udp
 sudo firewall-cmd --permanent --zone=helio --add-masquerade
 sudo firewall-cmd --permanent --zone=helio --add-forward
 sudo firewall-cmd --permanent --zone=public --add-forward
