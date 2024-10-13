@@ -52,8 +52,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let client_pg = PGClient::new(database_url);
 
+    let port = 8080;
+    let addr =  format!("0.0.0.0:{}", port).parse().unwrap();
+
     let server = tokio::spawn(async move {
-        let addr = "0.0.0.0:8080".parse().unwrap();
         let rpc_service = RPC::new(client_pg);
 
         tonic::transport::Server::builder()
@@ -62,6 +64,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .await
             .unwrap()
     });
+
+    println!("App listening on port {}", port);
 
     server.await?;
 

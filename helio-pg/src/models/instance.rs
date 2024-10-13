@@ -16,6 +16,8 @@ pub struct Instance {
     pub itype: i32,
     pub image: i32,
 
+    pub mac: String,
+
     pub created_by: i32,
     pub created_at: Timestamptz,
     pub updated_at: Timestamptz,

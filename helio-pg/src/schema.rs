@@ -8,6 +8,8 @@ diesel::table! {
         label -> Nullable<Text>,
         itype -> Int4,
         image -> Int4,
+        #[max_length = 17]
+        mac -> Varchar,
         created_by -> Int4,
         created_at -> Timestamptz,
         updated_at -> Timestamptz,

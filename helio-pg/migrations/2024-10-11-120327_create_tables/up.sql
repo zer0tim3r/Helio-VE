@@ -22,6 +22,8 @@ CREATE TABLE "instance" (
     itype INT NOT NULL, -- instance type
     image INT NOT NULL, -- instance image
 
+    mac VARCHAR(17) NOT NULL UNIQUE,
+
     created_by INT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
