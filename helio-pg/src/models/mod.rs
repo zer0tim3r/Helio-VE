@@ -1,2 +1,2 @@
 
-mod instance;
+pub mod instance;

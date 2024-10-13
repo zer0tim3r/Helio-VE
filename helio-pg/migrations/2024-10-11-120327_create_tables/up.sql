@@ -18,7 +18,9 @@ CREATE TABLE "instance" (
     uuid VARCHAR(64) NOT NULL UNIQUE,
 
     label TEXT,
-    params JSONB NOT NULL,
+    
+    itype INT NOT NULL, -- instance type
+    image INT NOT NULL, -- instance image
 
     created_by INT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -28,16 +30,16 @@ CREATE TABLE "instance" (
     FOREIGN KEY (created_by) REFERENCES "user" (id)
 );
 
-CREATE TABLE "disk" (
-    id SERIAL PRIMARY KEY,
-    uuid VARCHAR(64) NOT NULL UNIQUE,
+-- CREATE TABLE "disk" (
+--     id SERIAL PRIMARY KEY,
+--     uuid VARCHAR(64) NOT NULL UNIQUE,
 
-    capacity INT,  -- {n}GiB
+--     capacity INT,  -- {n}GiB
     
-    created_by INT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+--     created_by INT NOT NULL,
+--     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+--     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     
-    FOREIGN KEY (created_by) REFERENCES "user" (id)
-);
+--     FOREIGN KEY (created_by) REFERENCES "user" (id)
+-- );

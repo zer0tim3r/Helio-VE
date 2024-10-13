@@ -12,4 +12,7 @@ service Helio {
 message CreateInstanceArgs {
     string uuid = 1;
     optional string label = 2;
+    int32 itype = 3;
+    int32 image = 4;
+    int32 created_by = 5;
 }

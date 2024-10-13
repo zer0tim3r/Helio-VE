@@ -12,8 +12,9 @@ pub struct Instance {
     pub uuid: String,
 
     pub label: Option<String>,
-    pub params: serde_json::Value,
 
+    pub itype: i32,
+    pub image: i32,
 
     pub created_by: i32,
     pub created_at: Timestamptz,
@@ -26,7 +27,9 @@ pub struct NewInstance {
     pub uuid: String,
 
     pub label: Option<String>,
-    pub params: serde_json::Value,
+
+    pub itype: i32,
+    pub image: i32,
 
     pub created_by: i32,
 }
