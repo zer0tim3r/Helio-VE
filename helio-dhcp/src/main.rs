@@ -8,8 +8,6 @@ async fn main() -> std::io::Result<()> {
     let allowed_mac = vec!["52:54:00:11:22:33".to_string()]; // 허용된 MAC 주소 목록
     let mut ip_pool = HashMap::new(); // 클라이언트 IP 할당을 위한 IP 풀
 
-    ip_pool.insert("52:54:00:11:22:33".to_string(), Ipv4Addr::new(192, 168, 10, 3));
-
     // UDP 소켓 생성 (DHCP 서버는 67번 포트를 사용)
     let socket = UdpSocket::bind("0.0.0.0:67")?;
     socket.set_broadcast(true)?;
@@ -35,7 +33,7 @@ async fn main() -> std::io::Result<()> {
                             println!("MAC 주소가 허용되었습니다. DHCP Offer 전송...");
 
                             // 할당할 IP 주소 선택 (임시로 고정 IP를 사용)
-                            let offered_ip = Ipv4Addr::new(192, 168, 10, 1);
+                            let offered_ip = Ipv4Addr::new(192, 168, 10, 3);
                             ip_pool.insert(client_mac.clone(), offered_ip);
 
                             // DHCP Offer 메시지 생성
@@ -97,6 +95,7 @@ async fn main() -> std::io::Result<()> {
 sudo firewall-cmd --permanent --new-zone=helio
 sudo firewall-cmd --permanent --zone=helio --change-interface=br0
 sudo firewall-cmd --permanent --zone=helio --add-port=67/udp 
+sudo firewall-cmd --permanent --zone=helio --add-port=68/udp 
 sudo firewall-cmd --permanent --zone=helio --add-masquerade
 sudo firewall-cmd --permanent --zone=public --add-forward
 sudo firewall-cmd --reload
