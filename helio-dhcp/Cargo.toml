@@ -5,4 +5,5 @@ edition = "2021"
 
 [dependencies]
 dhcproto = "0.12"
+nix = { version = "0.29", features = ["socket"] }
 tokio = { version = "1", features = ["full"] }
