@@ -5,11 +5,13 @@ use std::collections::HashMap;
 
 #[tokio::main]
 async fn main() -> std::io::Result<()> {
-    let allowed_mac = vec!["00:11:22:33:44:55".to_string()]; // 허용된 MAC 주소 목록
+    let allowed_mac = vec!["52:54:00:11:22:33".to_string()]; // 허용된 MAC 주소 목록
     let mut ip_pool = HashMap::new(); // 클라이언트 IP 할당을 위한 IP 풀
 
+    ip_pool.insert("52:54:00:11:22:33".to_string(), Ipv4Addr::new(192, 168, 10, 3));
+
     // UDP 소켓 생성 (DHCP 서버는 67번 포트를 사용)
-    let socket = UdpSocket::bind("0.0.0.0:67")?;
+    let socket = UdpSocket::bind("192.168.10.254:67")?;
     socket.set_broadcast(true)?;
 
     loop {
@@ -90,3 +92,12 @@ async fn main() -> std::io::Result<()> {
         }
     }
 }
+
+/*
+sudo firewall-cmd --permanent --new-zone=helio
+sudo firewall-cmd --permanent --zone=helio --change-interface=br0
+sudo firewall-cmd --permanent --zone=helio --add-port=67/udp 
+sudo firewall-cmd --permanent --zone=helio --add-masquerade
+sudo firewall-cmd --permanent --zone=public --add-forward
+sudo firewall-cmd --reload
+*/
