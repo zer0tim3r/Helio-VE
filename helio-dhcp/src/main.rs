@@ -129,14 +129,15 @@ async fn main() -> std::io::Result<()> {
 }
 
 /*
-sudo firewall-cmd --permanent --new-zone=helio
-sudo firewall-cmd --permanent --zone=helio --change-interface=br0
-sudo firewall-cmd --permanent --zone=helio --add-port=67/udp
-sudo firewall-cmd --permanent --zone=helio --add-masquerade
-sudo firewall-cmd --permanent --zone=helio --add-forward
+sudo firewall-cmd --permanent --zone=public --change-interface=br0
+sudo firewall-cmd --permanent --zone=public --add-port=67/udp
+sudo firewall-cmd --permanent --zone=public --add-masquerade
 sudo firewall-cmd --permanent --zone=public --add-forward
 sudo firewall-cmd --reload
 
-sudo ip link set br0 promisc on
-sudo ip link set tap0 promisc on
+sudo firewall-cmd --permanent --direct --add-rule ipv4 filter FORWARD 10 -j DROP
+sudo firewall-cmd --permanent --direct --add-rule ipv4 filter FORWARD 1 ! -s 192.168.10.0/24 -j ACCEPT
+sudo firewall-cmd --permanent --direct --add-rule ipv4 filter FORWARD 0 -s 192.168.10.3 -m mac --mac-source 52:54:00:11:22:33 -j ACCEPT
+
+
 */
