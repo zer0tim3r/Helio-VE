@@ -1,9 +1,8 @@
 use dhcproto::v4::{DhcpOption, Message, MessageType, Opcode, OptionCode};
 use dhcproto::{Decodable, Decoder, Encodable, Encoder};
 use dotenvy::dotenv;
-use helio_pg::{models, DatabaseError, DatabaseErrorKind, PGClient, PGConn};
+use helio_pg::{models, PGClient};
 use nix::sys::socket::{setsockopt, sockopt::BindToDevice};
-use rand::Rng;
 use std::net::{Ipv4Addr, UdpSocket};
 
 #[tokio::main]
@@ -24,33 +23,6 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             Ok(())
         };
 
-    let allocate_new_ip_by_mac = |conn: &mut PGConn, mac: String| -> Ipv4Addr {
-        let mut rng = rand::thread_rng();
-
-        loop {
-            let new_ipv4 = Ipv4Addr::new(192, 168, 10, rng.gen_range(1..=250));
-
-            match models::instance::Instance::_dhcp_update_ipv4_by_mac(
-                conn,
-                mac.clone(),
-                new_ipv4.to_string(),
-            ) {
-                Ok(_) => return new_ipv4,
-                Err(err) => {
-                    if let DatabaseError(
-                        DatabaseErrorKind::UniqueViolation,
-                        _,
-                    ) = err
-                    {
-                        continue;
-                    } else {
-                        panic!("Error allocate IP: {}", err); // 다른 에러는 패닉
-                    }
-                }
-            }
-        }
-    };
-
     // UDP 소켓 생성 (DHCP 서버는 67번 포트를 사용)
     let socket = UdpSocket::bind("0.0.0.0:67")?;
     setsockopt(&socket, BindToDevice, &std::ffi::OsString::from("br0"))
@@ -67,15 +39,12 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
 
         // 수신한 DHCP 메시지를 파싱
         if let Ok(dhcp_message) = Message::decode(&mut Decoder::new(&buf[..amt])) {
-            let client_mac = format!(
-                "{:02x}:{:02x}:{:02x}:{:02x}:{:02x}:{:02x}",
-                dhcp_message.chaddr()[0],
-                dhcp_message.chaddr()[1],
-                dhcp_message.chaddr()[2],
-                dhcp_message.chaddr()[3],
-                dhcp_message.chaddr()[4],
-                dhcp_message.chaddr()[5]
-            );
+            let client_mac = dhcp_message
+                .chaddr()
+                .iter()
+                .map(|b| format!("{:02x}", b))
+                .collect::<Vec<_>>()
+                .join(":");
 
             // DHCP Discover 메시지에만 응답
             if let Some(DhcpOption::MessageType(message_type)) =
@@ -112,9 +81,9 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                                     .insert(DhcpOption::ServerIdentifier(Ipv4Addr::new(
                                         192, 168, 10, 254,
                                     )));
-                                offer_message
-                                    .opts_mut()
-                                    .insert(DhcpOption::SubnetMask(Ipv4Addr::new(255, 255, 255, 0)));
+                                offer_message.opts_mut().insert(DhcpOption::SubnetMask(
+                                    Ipv4Addr::new(255, 255, 255, 0),
+                                ));
                                 offer_message
                                     .opts_mut()
                                     .insert(DhcpOption::AddressLeaseTime(3600u32));
@@ -144,31 +113,24 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                                     instance.uuid
                                 );
 
-                                let allocated_ip = match instance.ipv4 {
-                                    Some(ipv4) => ipv4.parse::<Ipv4Addr>()?,
-                                    None => {
-                                        let ip = allocate_new_ip_by_mac(conn, client_mac.clone());
+                                let instance_ip = instance.ipv4.parse::<Ipv4Addr>()?;
 
-                                        check_add(
-                                            "filter",
-                                            "FORWARD",
-                                            format!(
-                                                "-s {} -m mac --mac-source {} -j ACCEPT",
-                                                ip.to_string(),
-                                                client_mac.clone()
-                                            )
-                                            .as_str(),
-                                        )?;
-
-                                        ip
-                                    }
-                                };
+                                check_add(
+                                    "filter",
+                                    "FORWARD",
+                                    format!(
+                                        "-s {} -m mac --mac-source {} -j ACCEPT",
+                                        instance_ip.to_string(),
+                                        client_mac.clone()
+                                    )
+                                    .as_str(),
+                                )?;
 
                                 // DHCP ACK 메시지 생성
                                 let mut ack_message = Message::default();
                                 ack_message.set_opcode(Opcode::BootReply);
                                 ack_message.set_xid(dhcp_message.xid());
-                                ack_message.set_yiaddr(allocated_ip);
+                                ack_message.set_yiaddr(instance_ip);
                                 ack_message.set_chaddr(dhcp_message.chaddr());
 
                                 ack_message

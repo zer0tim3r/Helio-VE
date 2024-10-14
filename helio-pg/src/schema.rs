@@ -11,7 +11,7 @@ diesel::table! {
         #[max_length = 20]
         mac -> Varchar,
         #[max_length = 20]
-        ipv4 -> Nullable<Varchar>,
+        ipv4 -> Varchar,
         #[max_length = 64]
         created_by -> Varchar,
         created_at -> Timestamptz,

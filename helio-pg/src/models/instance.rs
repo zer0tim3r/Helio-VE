@@ -17,7 +17,7 @@ pub struct Instance {
     pub image: i32,
 
     pub mac: String,
-    pub ipv4: Option<String>,
+    pub ipv4: String,
 
     pub created_by: String,
     pub created_at: Timestamptz,
@@ -35,7 +35,7 @@ pub struct NewInstance {
     pub image: i32,
 
     pub mac: String,
-    pub ipv4: Option<String>,
+    pub ipv4: String,
 
     pub created_by: String,
 }
@@ -89,19 +89,6 @@ impl Instance {
         .get_result::<Instance>(conn)
     }
 
-    pub fn _dhcp_update_ipv4_by_mac(
-        conn: &mut PgConnection,
-        rmac: String,
-        new_ipv4: String,
-    ) -> QueryResult<Instance> {
-        use crate::schema::instance::dsl::*;
-
-        diesel::update(instance)
-            .filter(mac.eq(rmac))
-            .set(ipv4.eq(Some(new_ipv4)))
-            .get_result(conn)
-    }
-
     pub fn _dhcp_get_by_mac(conn: &mut PgConnection, _mac: String) -> QueryResult<Instance> {
         use crate::schema::instance::dsl::*;
 
@@ -112,12 +99,12 @@ impl Instance {
         query.first(conn)
     }
 
-    pub fn _dhcp_get_by_ipv4(conn: &mut PgConnection, _ipv4: String) -> QueryResult<Instance> {
+    pub fn _cloudinit_get_by_ipv4(conn: &mut PgConnection, _ipv4: String) -> QueryResult<Instance> {
         use crate::schema::instance::dsl::*;
 
         let query = instance.into_boxed();
 
-        let query = query.filter(ipv4.eq(Some(_ipv4)));
+        let query = query.filter(ipv4.eq(_ipv4));
 
         query.first(conn)
     }

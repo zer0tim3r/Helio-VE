@@ -23,7 +23,7 @@ CREATE TABLE "instance" (
     image INT NOT NULL, -- instance image
 
     mac VARCHAR(20) NOT NULL UNIQUE,
-    ipv4 VARCHAR(20),
+    ipv4 VARCHAR(20) NOT NULL UNIQUE,
 
     created_by VARCHAR(64) NOT NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

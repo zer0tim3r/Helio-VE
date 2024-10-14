@@ -19,7 +19,7 @@ message InstanceModel {
     int32 itype = 3;
     int32 image = 4;
     string mac = 5;
-    optional string ipv4 = 6;
+    string ipv4 = 6;
     
     string created_by = 7;
     google.protobuf.Timestamp created_at = 8;

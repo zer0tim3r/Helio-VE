@@ -10,8 +10,9 @@ pub type Timestamptz = chrono::DateTime<chrono::Utc>;
 
 pub type PGConn = PgConnection;
 
-pub use diesel::result::Error::DatabaseError;
-pub use diesel::result::DatabaseErrorKind;
+pub mod wrapper {
+    pub use diesel::result::*;
+}
 
 pub struct PGClient(pub DBPool);
 

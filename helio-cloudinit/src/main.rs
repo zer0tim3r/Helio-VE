@@ -1,74 +1,49 @@
 use actix_web::*;
+use dotenvy::dotenv;
+use helio_pg::{models, DBPool, PGClient};
 use middleware::Logger;
 
-const NOT_FOUND_RESPONSE: &str = "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>
-<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"
-	\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">
-<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">
- <head>
-  <title>404 - Not Found</title>
- </head>
- <body>
-  <h1>404 - Not Found</h1>
- </body>
-</html>";
+async fn meta_data(
+    pool: web::Data<DBPool>,
+    req: HttpRequest
+) -> Result<impl Responder, Box<dyn std::error::Error>> {
+    let conn = &mut pool.get()?;
 
-const BAD_REQUEST_RESPONSE: &str = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">
-<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">
-   <head>
-      <title>400 - Bad Request</title>
-   </head>
-   <body>
-      <h1>400 - Bad Request</h1>
-   </body>
-</html>";
+    let instance = models::instance::Instance::_cloudinit_get_by_ipv4(conn, req.connection_info().realip_remote_addr().unwrap_or_default().to_string())?;
 
-const UNAUTHORIZED_RESPONSE: &str = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">
-<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">
-   <head>
-      <title>401 - Unauthorized</title>
-   </head>
-   <body>
-      <h1>401 - Unauthorized</h1>
-   </body>
-</html>";
-
-async fn root_all() -> impl Responder {
-    HttpResponse::Ok().content_type("text/plain").body("latest")
+    Ok(HttpResponse::Ok().content_type("application/xml").body(format!("instance-id: {}
+local-hostname: ip-{}
+", instance.uuid, instance.ipv4.replace(".", "-"))))
 }
 
-async fn latest_all() -> impl Responder {
-    HttpResponse::Ok().content_type("text/plain").body("meta-data")
+async fn user_data(
+    pool: web::Data<DBPool>,
+    req: HttpRequest
+) -> Result<impl Responder, Box<dyn std::error::Error>> {
+    let conn = &mut pool.get()?;
+
+    let instance = models::instance::Instance::_cloudinit_get_by_ipv4(conn, req.connection_info().realip_remote_addr().unwrap_or_default().to_string())?;
+
+    Ok(HttpResponse::Ok().content_type("application/xml").body(format!("#cloud-config
+hostname: ip-{}
+
+chpasswd:
+  list: |
+    root:root
+  expire: False
+
+runcmd:
+  - sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+  - systemctl restart sshd
+", instance.ipv4.replace(".", "-"))))
 }
 
-async fn meta_data_all() -> impl Responder {
-    HttpResponse::Ok().content_type("text/plain").body("instance-id")
-}
-
-async fn meta_data_part(path: web::Path<String>) -> impl Responder {
-    let data_name = path.into_inner();
-
-    if data_name == "instance-id" {
-        return HttpResponse::Ok().body("example-vm");
-    }
-
-    HttpResponse::NotFound().content_type("text/html").body(NOT_FOUND_RESPONSE)
-}
-
-async fn user_data_all() -> impl Responder {
-    HttpResponse::Ok().content_type("text/plain").body("instance-id")
-}
-
-async fn user_data_part(path: web::Path<String>) -> impl Responder {
-    let data_name = path.into_inner();
-
-    if data_name == "instance-id" {
-        return HttpResponse::Ok().body("example-vm");
-    }
-
-    HttpResponse::NotFound().content_type("text/html").body(NOT_FOUND_RESPONSE)
+async fn vendor_data() -> impl Responder {
+    HttpResponse::Ok().content_type("application/xml").body("#cloud-config
+cloud-init:
+  data_sources:
+    - NoCloud
+")
 }
 
 // async fn user_data_all() -> impl Responder {
@@ -87,18 +62,25 @@ async fn user_data_part(path: web::Path<String>) -> impl Responder {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    dotenv().expect("dotenv error");
+
     let port = 8180;
 
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let client_pg = PGClient::new(database_url);
+
+    env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
+
     let server = rt::spawn(async move {
-        HttpServer::new(|| {
+        HttpServer::new(move || {
             App::new()
-                .wrap(Logger::new("%a %{User-Agent}i"))
+                .wrap(Logger::new("%a %r %{User-Agent}i"))
                 .wrap(middleware::NormalizePath::trim())
-                .route("/", web::get().to(root_all))
-                .route("/latest", web::get().to(latest_all))
-                .route("/latest/meta-data", web::get().to(meta_data_all))
-                .route("/latest/meta-data/{data_name}", web::get().to(meta_data_part))
-                .default_service(web::route().to(|| async { HttpResponse::NotFound().content_type("text/html").body(NOT_FOUND_RESPONSE) }))
+                .app_data(web::Data::new(client_pg.0.clone()))
+                .route("/meta-data", web::get().to(meta_data))
+                .route("/user-data", web::get().to(user_data))
+                .route("/vendor-data", web::get().to(vendor_data))
+                .default_service(web::route().to(|| async { HttpResponse::NotFound() }))
         })
         .bind(("0.0.0.0", port))?
         .run()

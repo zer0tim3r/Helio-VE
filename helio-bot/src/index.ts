@@ -27,17 +27,17 @@ let gRPC = new HelioClient(new GrpcTransport({
 
     // console.log(response)
 
-    var response = await gRPC.startInstance({
-        uuid,
-        createdBy: "823554839911989280"
-    }).then(r => r.response, e => ({ error: e }));
-
-    console.log(response)
-
-    // var response = await gRPC.deleteInstance({
+    // var response = await gRPC.startInstance({
     //     uuid,
     //     createdBy: "823554839911989280"
-    // }).then(r => r.response, e => { throw e; });
+    // }).then(r => r.response, e => ({ error: e }));
 
     // console.log(response)
+
+    var response = await gRPC.deleteInstance({
+        uuid,
+        createdBy: "823554839911989280"
+    }).then(r => r.response, e => { throw e; });
+
+    console.log(response)
 })()

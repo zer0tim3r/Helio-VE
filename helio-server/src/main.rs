@@ -1,5 +1,7 @@
+use std::net::Ipv4Addr;
+
 use dotenvy::dotenv;
-use helio_pg::{models, PGClient};
+use helio_pg::{models, wrapper, PGClient};
 use rand::Rng;
 
 mod common;
@@ -21,7 +23,6 @@ impl RPC {
         RPC { client_pg }
     }
 }
-
 
 fn to_timestamp(t: chrono::DateTime<chrono::Utc>) -> prost_types::Timestamp {
     prost_types::Timestamp {
@@ -50,8 +51,9 @@ impl Helio for RPC {
             .map_err(|e| tonic::Status::from_error(Box::new(e)))?;
 
         Ok(tonic::Response::new(ListInstanceResult {
-            result: instances.iter().map(|i| {
-                InstanceModel {
+            result: instances
+                .iter()
+                .map(|i| InstanceModel {
                     uuid: i.uuid.clone(),
                     label: i.label.clone(),
                     itype: i.itype,
@@ -61,8 +63,8 @@ impl Helio for RPC {
                     created_by: i.created_by.clone(),
                     created_at: Some(to_timestamp(i.created_at)),
                     updated_at: Some(to_timestamp(i.updated_at)),
-                }
-            }).collect(),
+                })
+                .collect(),
         }))
     }
 
@@ -78,10 +80,73 @@ impl Helio for RPC {
             .get()
             .map_err(|e| tonic::Status::from_error(Box::new(e)))?;
 
-        let args = request.into_inner().into();
+        let mut rng = rand::thread_rng();
 
-        let instance = models::instance::Instance::_rpc_create(conn, args)
-            .map_err(|e| tonic::Status::from_error(Box::new(e)))?;
+        let mut unique_mac;
+
+        loop {
+            unique_mac = [
+                (rng.gen_range(0..=255) & 0b11111100) | 0b00000010, // 로컬, 멀티캐스트
+                rng.gen_range(0..=255),
+                rng.gen_range(0..=255),
+                rng.gen_range(0..=255),
+                rng.gen_range(0..=255),
+                rng.gen_range(0..=255),
+            ]
+            .iter()
+            .map(|b| format!("{:02x}", b))
+            .collect::<Vec<_>>()
+            .join(":");
+
+            match models::instance::Instance::_dhcp_get_by_mac(conn, unique_mac.clone()) {
+                Ok(_) => {
+                    continue;
+                }
+                Err(err) => {
+                    if let wrapper::Error::NotFound = err {
+                        break;
+                    }
+
+                    continue;
+                }
+            }
+        }
+
+        let mut unique_ipv4;
+
+        loop {
+            unique_ipv4 = Ipv4Addr::new(192, 168, 10, rng.gen_range(1..=250));
+
+            match models::instance::Instance::_cloudinit_get_by_ipv4(conn, unique_ipv4.to_string())
+            {
+                Ok(_) => {
+                    continue;
+                }
+                Err(err) => {
+                    if let wrapper::Error::NotFound = err {
+                        break;
+                    }
+
+                    continue;
+                }
+            }
+        }
+
+        let args = request.into_inner();
+
+        let instance = models::instance::Instance::_rpc_create(
+            conn,
+            models::instance::NewInstance {
+                uuid: args.uuid,
+                label: args.label,
+                itype: args.itype,
+                image: args.image,
+                mac: unique_mac,
+                ipv4: unique_ipv4.to_string(),
+                created_by: args.created_by,
+            },
+        )
+        .map_err(|e| tonic::Status::from_error(Box::new(e)))?;
 
         qemu_kvm::create_instance(instance).map_err(|e| tonic::Status::from_error(e))?;
 
@@ -187,31 +252,39 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-impl From<CreateInstanceArgs> for models::instance::NewInstance {
-    fn from(args: CreateInstanceArgs) -> Self {
-        let mut rng = rand::thread_rng();
+// impl From<CreateInstanceArgs> for models::instance::NewInstance {
+//     fn from(args: CreateInstanceArgs) -> Self {
+//         let generate_unique_mac = || {
+//             loop {
+//                 let mut rng = rand::thread_rng();
 
-        let mac = [
-            (rng.gen_range(0..=255) & 0b11111100) | 0b00000010, // 로컬, 멀티캐스트
-            rng.gen_range(0..=255),
-            rng.gen_range(0..=255),
-            rng.gen_range(0..=255),
-            rng.gen_range(0..=255),
-            rng.gen_range(0..=255),
-        ]
-        .iter()
-        .map(|b| format!("{:02x}", b))
-        .collect::<Vec<_>>()
-        .join(":");
+//                 let mac = [
+//                     (rng.gen_range(0..=255) & 0b11111100) | 0b00000010, // 로컬, 멀티캐스트
+//                     rng.gen_range(0..=255),
+//                     rng.gen_range(0..=255),
+//                     rng.gen_range(0..=255),
+//                     rng.gen_range(0..=255),
+//                     rng.gen_range(0..=255),
+//                 ]
+//                 .iter()
+//                 .map(|b| format!("{:02x}", b))
+//                 .collect::<Vec<_>>()
+//                 .join(":");
 
-        models::instance::NewInstance {
-            uuid: args.uuid,
-            label: args.label,
-            itype: args.itype,
-            image: args.image,
-            mac,
-            ipv4: None,
-            created_by: args.created_by,
-        }
-    }
-}
+//                 if models::instance::Instance::_dhcp_get_by_mac(conn, mac)
+//             }
+//         };
+
+//         let ipv4 = { Ipv4Addr::new(192, 168, 10, rng.gen_range(1..=250)) };
+
+//         models::instance::NewInstance {
+//             uuid: args.uuid,
+//             label: args.label,
+//             itype: args.itype,
+//             image: args.image,
+//             mac,
+//             ipv4,
+//             created_by: args.created_by,
+//         }
+//     }
+// }
