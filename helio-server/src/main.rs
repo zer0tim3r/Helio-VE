@@ -1,6 +1,5 @@
 use std::net::Ipv4Addr;
 
-use dotenvy::dotenv;
 use helio_pg::{models, wrapper, PGClient};
 use rand::Rng;
 
