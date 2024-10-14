@@ -1,4 +1,5 @@
 use actix_web::*;
+use middleware::Logger;
 
 const NOT_FOUND_RESPONSE: &str = "<?xml version=\"1.0\" encoding=\"iso-8859-1\"?>
 <!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\"
@@ -91,6 +92,7 @@ async fn main() -> std::io::Result<()> {
     let server = rt::spawn(async move {
         HttpServer::new(|| {
             App::new()
+                .wrap(Logger::new("%a %{User-Agent}i"))
                 .wrap(middleware::NormalizePath::trim())
                 .route("/", web::get().to(root_all))
                 .route("/latest", web::get().to(latest_all))
@@ -103,7 +105,7 @@ async fn main() -> std::io::Result<()> {
         .await
     });
 
-    println!("App listening on port {}", port);
+    println!("HVE cloudinit listening on port {}", port);
 
     server.await?
 }

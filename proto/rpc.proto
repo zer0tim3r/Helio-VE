@@ -1,14 +1,29 @@
 syntax = "proto3";
 
 import "google/protobuf/empty.proto";
-// import "google/protobuf/timestamp.proto";
+import "google/protobuf/timestamp.proto";
 
 package rpc;
 
 service Helio {
     rpc ListInstance (ListInstanceArgs) returns (ListInstanceResult);
     rpc CreateInstance (CreateInstanceArgs) returns (google.protobuf.Empty);
+    rpc DeleteInstance (DeleteInstanceArgs) returns (google.protobuf.Empty);
     rpc StartInstance (StartInstanceArgs) returns (google.protobuf.Empty);
+}
+
+
+message InstanceModel {
+    string uuid = 1;
+    optional string label = 2;
+    int32 itype = 3;
+    int32 image = 4;
+    string mac = 5;
+    optional string ipv4 = 6;
+    
+    string created_by = 7;
+    google.protobuf.Timestamp created_at = 8;
+    google.protobuf.Timestamp updated_at = 9;
 }
 
 message ListInstanceArgs {
@@ -16,7 +31,7 @@ message ListInstanceArgs {
 }
 
 message ListInstanceResult {
-    repeated string result = 1;
+    repeated InstanceModel result = 1;
 }
 
 message CreateInstanceArgs {
@@ -25,6 +40,11 @@ message CreateInstanceArgs {
     int32 itype = 3;
     int32 image = 4;
     string created_by = 5;
+}
+
+message DeleteInstanceArgs {
+    string uuid = 1;
+    string created_by = 2;
 }
 
 message StartInstanceArgs {

@@ -17,9 +17,11 @@
     "@protobuf-ts/plugin": "^2.9.4",
     "@protobuf-ts/runtime": "^2.9.4",
     "@protobuf-ts/runtime-rpc": "^2.9.4",
-    "redis": "^4.7.0"
+    "redis": "^4.7.0",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "@types/uuid": "^10",
     "@yarnpkg/pnpify": "^4.1.2",
     "pino-pretty": "^11.2.2",
     "ts-node-dev": "^2.0.0",

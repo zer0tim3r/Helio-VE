@@ -41,39 +41,29 @@ pub struct NewInstance {
 }
 
 impl Instance {
-
     pub fn _default_get_by_id(conn: &mut PgConnection, _id: i32) -> QueryResult<Instance> {
         use crate::schema::instance::dsl::*;
 
-        let query = instance.into_boxed();
-
-        let query =
-            query.filter(id.eq(_id));
-
-        query.first(conn)
+        instance.filter(id.eq(_id)).first(conn)
     }
 
-    pub fn _default_get_by_uuid(conn: &mut PgConnection, _uuid: String, _created_by: String) -> QueryResult<Instance> {
+    pub fn _default_get_by_uuid(
+        conn: &mut PgConnection,
+        _uuid: String,
+        _created_by: String,
+    ) -> QueryResult<Instance> {
         use crate::schema::instance::dsl::*;
 
-        let query = instance.into_boxed();
-
-        let query =
-            query.filter(uuid.eq(_uuid))
-            .filter(created_by.eq(_created_by));
-
-        query.first(conn)
+        instance
+            .filter(uuid.eq(_uuid))
+            .filter(created_by.eq(_created_by))
+            .first(conn)
     }
 
     pub fn _rpc_list(conn: &mut PgConnection, _created_by: String) -> QueryResult<Vec<Instance>> {
         use crate::schema::instance::dsl::*;
 
-        let query = instance.into_boxed();
-
-        let query =
-            query.filter(created_by.eq(_created_by));
-
-        query.get_results(conn)
+        instance.filter(created_by.eq(_created_by)).get_results(conn)
     }
 
     pub fn _rpc_create(conn: &mut PgConnection, input: NewInstance) -> QueryResult<Instance> {
@@ -84,13 +74,32 @@ impl Instance {
         result
     }
 
-    pub fn _dhcp_update_ipv4_by_mac(conn: &mut PgConnection, rmac: String, new_ipv4: String) -> QueryResult<Instance> {
+    pub fn _rpc_delete(
+        conn: &mut PgConnection,
+        _uuid: String,
+        _created_by: String,
+    ) -> QueryResult<Instance> {
+        use crate::schema::instance::dsl::*;
+
+        diesel::delete(
+            instance
+                .filter(uuid.eq(_uuid))
+                .filter(created_by.eq(_created_by)),
+        )
+        .get_result::<Instance>(conn)
+    }
+
+    pub fn _dhcp_update_ipv4_by_mac(
+        conn: &mut PgConnection,
+        rmac: String,
+        new_ipv4: String,
+    ) -> QueryResult<Instance> {
         use crate::schema::instance::dsl::*;
 
         diesel::update(instance)
-        .filter(mac.eq(rmac))
-        .set(ipv4.eq(Some(new_ipv4)))
-        .get_result(conn)
+            .filter(mac.eq(rmac))
+            .set(ipv4.eq(Some(new_ipv4)))
+            .get_result(conn)
     }
 
     pub fn _dhcp_get_by_mac(conn: &mut PgConnection, _mac: String) -> QueryResult<Instance> {
@@ -98,8 +107,7 @@ impl Instance {
 
         let query = instance.into_boxed();
 
-        let query =
-            query.filter(mac.eq(_mac));
+        let query = query.filter(mac.eq(_mac));
 
         query.first(conn)
     }
@@ -109,8 +117,7 @@ impl Instance {
 
         let query = instance.into_boxed();
 
-        let query =
-            query.filter(ipv4.eq(Some(_ipv4)));
+        let query = query.filter(ipv4.eq(Some(_ipv4)));
 
         query.first(conn)
     }

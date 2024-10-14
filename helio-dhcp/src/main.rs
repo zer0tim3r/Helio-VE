@@ -57,6 +57,8 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         .expect("인터페이스 바인딩 실패");
     socket.set_broadcast(true)?;
 
+    println!("HVE dhcp listening on port {}", 67);
+
     loop {
         let mut buf = [0u8; 1024];
         let (amt, _) = socket.recv_from(&mut buf)?;
@@ -93,13 +95,13 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                                 );
 
                                 // 할당할 IP 주소 선택 (임시로 고정 IP를 사용)
-                                // let offered_ip = Ipv4Addr::new(192, 168, 10, 250);
+                                let offered_ip = Ipv4Addr::new(192, 168, 10, 252);
 
                                 // DHCP Offer 메시지 생성
                                 let mut offer_message = Message::default();
                                 offer_message.set_opcode(Opcode::BootReply);
                                 offer_message.set_xid(dhcp_message.xid());
-                                // offer_message.set_yiaddr(offered_ip);
+                                offer_message.set_yiaddr(offered_ip);
                                 offer_message.set_chaddr(dhcp_message.chaddr());
 
                                 offer_message
@@ -110,12 +112,12 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
                                     .insert(DhcpOption::ServerIdentifier(Ipv4Addr::new(
                                         192, 168, 10, 254,
                                     )));
-                                // offer_message
-                                //     .opts_mut()
-                                //     .insert(DhcpOption::SubnetMask(Ipv4Addr::new(255, 255, 255, 0)));
-                                // offer_message
-                                //     .opts_mut()
-                                //     .insert(DhcpOption::AddressLeaseTime(3600u32));
+                                offer_message
+                                    .opts_mut()
+                                    .insert(DhcpOption::SubnetMask(Ipv4Addr::new(255, 255, 255, 0)));
+                                offer_message
+                                    .opts_mut()
+                                    .insert(DhcpOption::AddressLeaseTime(3600u32));
 
                                 // DHCP Offer 메시지를 클라이언트로 전송
                                 let mut offer_buf = Vec::new();

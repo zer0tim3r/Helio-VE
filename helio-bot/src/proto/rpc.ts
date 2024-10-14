@@ -12,6 +12,48 @@ import { UnknownFieldHandler } from "@protobuf-ts/runtime";
 import type { PartialMessage } from "@protobuf-ts/runtime";
 import { reflectionMergePartial } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
+import { Timestamp } from "./google/protobuf/timestamp";
+/**
+ * @generated from protobuf message rpc.InstanceModel
+ */
+export interface InstanceModel {
+    /**
+     * @generated from protobuf field: string uuid = 1;
+     */
+    uuid: string;
+    /**
+     * @generated from protobuf field: optional string label = 2;
+     */
+    label?: string;
+    /**
+     * @generated from protobuf field: int32 itype = 3;
+     */
+    itype: number;
+    /**
+     * @generated from protobuf field: int32 image = 4;
+     */
+    image: number;
+    /**
+     * @generated from protobuf field: string mac = 5;
+     */
+    mac: string;
+    /**
+     * @generated from protobuf field: optional string ipv4 = 6;
+     */
+    ipv4?: string;
+    /**
+     * @generated from protobuf field: string created_by = 7;
+     */
+    createdBy: string;
+    /**
+     * @generated from protobuf field: google.protobuf.Timestamp created_at = 8;
+     */
+    createdAt?: Timestamp;
+    /**
+     * @generated from protobuf field: google.protobuf.Timestamp updated_at = 9;
+     */
+    updatedAt?: Timestamp;
+}
 /**
  * @generated from protobuf message rpc.ListInstanceArgs
  */
@@ -26,9 +68,9 @@ export interface ListInstanceArgs {
  */
 export interface ListInstanceResult {
     /**
-     * @generated from protobuf field: repeated string result = 1;
+     * @generated from protobuf field: repeated rpc.InstanceModel result = 1;
      */
-    result: string[];
+    result: InstanceModel[];
 }
 /**
  * @generated from protobuf message rpc.CreateInstanceArgs
@@ -56,6 +98,19 @@ export interface CreateInstanceArgs {
     createdBy: string;
 }
 /**
+ * @generated from protobuf message rpc.DeleteInstanceArgs
+ */
+export interface DeleteInstanceArgs {
+    /**
+     * @generated from protobuf field: string uuid = 1;
+     */
+    uuid: string;
+    /**
+     * @generated from protobuf field: string created_by = 2;
+     */
+    createdBy: string;
+}
+/**
  * @generated from protobuf message rpc.StartInstanceArgs
  */
 export interface StartInstanceArgs {
@@ -68,6 +123,113 @@ export interface StartInstanceArgs {
      */
     createdBy: string;
 }
+// @generated message type with reflection information, may provide speed optimized methods
+class InstanceModel$Type extends MessageType<InstanceModel> {
+    constructor() {
+        super("rpc.InstanceModel", [
+            { no: 1, name: "uuid", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "label", kind: "scalar", opt: true, T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "itype", kind: "scalar", T: 5 /*ScalarType.INT32*/ },
+            { no: 4, name: "image", kind: "scalar", T: 5 /*ScalarType.INT32*/ },
+            { no: 5, name: "mac", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 6, name: "ipv4", kind: "scalar", opt: true, T: 9 /*ScalarType.STRING*/ },
+            { no: 7, name: "created_by", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 8, name: "created_at", kind: "message", T: () => Timestamp },
+            { no: 9, name: "updated_at", kind: "message", T: () => Timestamp }
+        ]);
+    }
+    create(value?: PartialMessage<InstanceModel>): InstanceModel {
+        const message = globalThis.Object.create((this.messagePrototype!));
+        message.uuid = "";
+        message.itype = 0;
+        message.image = 0;
+        message.mac = "";
+        message.createdBy = "";
+        if (value !== undefined)
+            reflectionMergePartial<InstanceModel>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: InstanceModel): InstanceModel {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string uuid */ 1:
+                    message.uuid = reader.string();
+                    break;
+                case /* optional string label */ 2:
+                    message.label = reader.string();
+                    break;
+                case /* int32 itype */ 3:
+                    message.itype = reader.int32();
+                    break;
+                case /* int32 image */ 4:
+                    message.image = reader.int32();
+                    break;
+                case /* string mac */ 5:
+                    message.mac = reader.string();
+                    break;
+                case /* optional string ipv4 */ 6:
+                    message.ipv4 = reader.string();
+                    break;
+                case /* string created_by */ 7:
+                    message.createdBy = reader.string();
+                    break;
+                case /* google.protobuf.Timestamp created_at */ 8:
+                    message.createdAt = Timestamp.internalBinaryRead(reader, reader.uint32(), options, message.createdAt);
+                    break;
+                case /* google.protobuf.Timestamp updated_at */ 9:
+                    message.updatedAt = Timestamp.internalBinaryRead(reader, reader.uint32(), options, message.updatedAt);
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: InstanceModel, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string uuid = 1; */
+        if (message.uuid !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.uuid);
+        /* optional string label = 2; */
+        if (message.label !== undefined)
+            writer.tag(2, WireType.LengthDelimited).string(message.label);
+        /* int32 itype = 3; */
+        if (message.itype !== 0)
+            writer.tag(3, WireType.Varint).int32(message.itype);
+        /* int32 image = 4; */
+        if (message.image !== 0)
+            writer.tag(4, WireType.Varint).int32(message.image);
+        /* string mac = 5; */
+        if (message.mac !== "")
+            writer.tag(5, WireType.LengthDelimited).string(message.mac);
+        /* optional string ipv4 = 6; */
+        if (message.ipv4 !== undefined)
+            writer.tag(6, WireType.LengthDelimited).string(message.ipv4);
+        /* string created_by = 7; */
+        if (message.createdBy !== "")
+            writer.tag(7, WireType.LengthDelimited).string(message.createdBy);
+        /* google.protobuf.Timestamp created_at = 8; */
+        if (message.createdAt)
+            Timestamp.internalBinaryWrite(message.createdAt, writer.tag(8, WireType.LengthDelimited).fork(), options).join();
+        /* google.protobuf.Timestamp updated_at = 9; */
+        if (message.updatedAt)
+            Timestamp.internalBinaryWrite(message.updatedAt, writer.tag(9, WireType.LengthDelimited).fork(), options).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message rpc.InstanceModel
+ */
+export const InstanceModel = new InstanceModel$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class ListInstanceArgs$Type extends MessageType<ListInstanceArgs> {
     constructor() {
@@ -119,7 +281,7 @@ export const ListInstanceArgs = new ListInstanceArgs$Type();
 class ListInstanceResult$Type extends MessageType<ListInstanceResult> {
     constructor() {
         super("rpc.ListInstanceResult", [
-            { no: 1, name: "result", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ }
+            { no: 1, name: "result", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => InstanceModel }
         ]);
     }
     create(value?: PartialMessage<ListInstanceResult>): ListInstanceResult {
@@ -134,8 +296,8 @@ class ListInstanceResult$Type extends MessageType<ListInstanceResult> {
         while (reader.pos < end) {
             let [fieldNo, wireType] = reader.tag();
             switch (fieldNo) {
-                case /* repeated string result */ 1:
-                    message.result.push(reader.string());
+                case /* repeated rpc.InstanceModel result */ 1:
+                    message.result.push(InstanceModel.internalBinaryRead(reader, reader.uint32(), options));
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -149,9 +311,9 @@ class ListInstanceResult$Type extends MessageType<ListInstanceResult> {
         return message;
     }
     internalBinaryWrite(message: ListInstanceResult, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
-        /* repeated string result = 1; */
+        /* repeated rpc.InstanceModel result = 1; */
         for (let i = 0; i < message.result.length; i++)
-            writer.tag(1, WireType.LengthDelimited).string(message.result[i]);
+            InstanceModel.internalBinaryWrite(message.result[i], writer.tag(1, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -241,6 +403,61 @@ class CreateInstanceArgs$Type extends MessageType<CreateInstanceArgs> {
  */
 export const CreateInstanceArgs = new CreateInstanceArgs$Type();
 // @generated message type with reflection information, may provide speed optimized methods
+class DeleteInstanceArgs$Type extends MessageType<DeleteInstanceArgs> {
+    constructor() {
+        super("rpc.DeleteInstanceArgs", [
+            { no: 1, name: "uuid", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "created_by", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<DeleteInstanceArgs>): DeleteInstanceArgs {
+        const message = globalThis.Object.create((this.messagePrototype!));
+        message.uuid = "";
+        message.createdBy = "";
+        if (value !== undefined)
+            reflectionMergePartial<DeleteInstanceArgs>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: DeleteInstanceArgs): DeleteInstanceArgs {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string uuid */ 1:
+                    message.uuid = reader.string();
+                    break;
+                case /* string created_by */ 2:
+                    message.createdBy = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: DeleteInstanceArgs, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string uuid = 1; */
+        if (message.uuid !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.uuid);
+        /* string created_by = 2; */
+        if (message.createdBy !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.createdBy);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message rpc.DeleteInstanceArgs
+ */
+export const DeleteInstanceArgs = new DeleteInstanceArgs$Type();
+// @generated message type with reflection information, may provide speed optimized methods
 class StartInstanceArgs$Type extends MessageType<StartInstanceArgs> {
     constructor() {
         super("rpc.StartInstanceArgs", [
@@ -301,5 +518,6 @@ export const StartInstanceArgs = new StartInstanceArgs$Type();
 export const Helio = new ServiceType("rpc.Helio", [
     { name: "ListInstance", options: {}, I: ListInstanceArgs, O: ListInstanceResult },
     { name: "CreateInstance", options: {}, I: CreateInstanceArgs, O: Empty },
+    { name: "DeleteInstance", options: {}, I: DeleteInstanceArgs, O: Empty },
     { name: "StartInstance", options: {}, I: StartInstanceArgs, O: Empty }
 ]);

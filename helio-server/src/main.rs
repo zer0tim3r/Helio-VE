@@ -1,8 +1,8 @@
 use dotenvy::dotenv;
 use helio_pg::{models, PGClient};
+use rand::Rng;
 
 mod common;
-mod qemu_disk;
 mod qemu_kvm;
 
 // !! IMPORTANT !!
@@ -19,6 +19,14 @@ pub struct RPC {
 impl RPC {
     fn new(client_pg: PGClient) -> Self {
         RPC { client_pg }
+    }
+}
+
+
+fn to_timestamp(t: chrono::DateTime<chrono::Utc>) -> prost_types::Timestamp {
+    prost_types::Timestamp {
+        seconds: t.timestamp(),
+        nanos: t.timestamp_subsec_nanos() as i32,
     }
 }
 
@@ -42,7 +50,19 @@ impl Helio for RPC {
             .map_err(|e| tonic::Status::from_error(Box::new(e)))?;
 
         Ok(tonic::Response::new(ListInstanceResult {
-            result: instances.iter().map(|i| i.uuid.clone()).collect(),
+            result: instances.iter().map(|i| {
+                InstanceModel {
+                    uuid: i.uuid.clone(),
+                    label: i.label.clone(),
+                    itype: i.itype,
+                    image: i.image,
+                    mac: i.mac.clone(),
+                    ipv4: i.ipv4.clone(),
+                    created_by: i.created_by.clone(),
+                    created_at: Some(to_timestamp(i.created_at)),
+                    updated_at: Some(to_timestamp(i.updated_at)),
+                }
+            }).collect(),
         }))
     }
 
@@ -58,10 +78,34 @@ impl Helio for RPC {
             .get()
             .map_err(|e| tonic::Status::from_error(Box::new(e)))?;
 
-        let new_instance = request.into_inner().into();
+        let args = request.into_inner().into();
 
-        models::instance::Instance::_rpc_create(conn, new_instance)
+        let instance = models::instance::Instance::_rpc_create(conn, args)
             .map_err(|e| tonic::Status::from_error(Box::new(e)))?;
+
+        qemu_kvm::create_instance(instance).map_err(|e| tonic::Status::from_error(e))?;
+
+        Ok(tonic::Response::new(()))
+    }
+
+    async fn delete_instance(
+        &self,
+        request: tonic::Request<DeleteInstanceArgs>,
+    ) -> Result<tonic::Response<()>, tonic::Status> {
+        println!("Received Instance delete request: {:?}", request);
+
+        let conn = &mut self
+            .client_pg
+            .0
+            .get()
+            .map_err(|e| tonic::Status::from_error(Box::new(e)))?;
+
+        let args = request.into_inner();
+
+        let instance = models::instance::Instance::_rpc_delete(conn, args.uuid, args.created_by)
+            .map_err(|e| tonic::Status::from_error(Box::new(e)))?;
+
+        qemu_kvm::delete_instance(instance).map_err(|e| tonic::Status::from_error(e))?;
 
         Ok(tonic::Response::new(()))
     }
@@ -80,8 +124,11 @@ impl Helio for RPC {
 
         let args = request.into_inner();
 
-        qemu_kvm::start_instance(conn, args.uuid, args.created_by)
-            .map_err(|e| tonic::Status::from_error(e))?;
+        let instance =
+            models::instance::Instance::_default_get_by_uuid(conn, args.uuid, args.created_by)
+                .map_err(|e| tonic::Status::from_error(Box::new(e)))?;
+
+        qemu_kvm::start_instance(instance).map_err(|e| tonic::Status::from_error(e))?;
 
         Ok(tonic::Response::new(()))
     }
@@ -133,22 +180,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .unwrap()
     });
 
-    println!("App listening on port {}", port);
+    println!("HVE server listening on port {}", port);
 
     server.await?;
 
     Ok(())
 }
 
-use rand::Rng;
-
 impl From<CreateInstanceArgs> for models::instance::NewInstance {
     fn from(args: CreateInstanceArgs) -> Self {
         let mut rng = rand::thread_rng();
 
-        // 첫 번째 바이트의 첫 두 비트를 00으로 설정 (유니캐스트, 로컬)
         let mac = [
-            (rng.gen_range(0..=255) & 0b11111100) | 0b00000001, // 첫 번째 바이트 | 유니캐스트 설정
+            (rng.gen_range(0..=255) & 0b11111100) | 0b00000010, // 로컬, 멀티캐스트
             rng.gen_range(0..=255),
             rng.gen_range(0..=255),
             rng.gen_range(0..=255),

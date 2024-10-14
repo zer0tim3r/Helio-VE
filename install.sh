@@ -5,6 +5,10 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
+# curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+
+mkdir -p /etc/helio/bin
 mkdir -p /etc/helio/disks
 mkdir -p /etc/helio/images
 mkdir -p /etc/helio/pids
@@ -26,3 +30,8 @@ iface tap0 inet manual
 sysctl -w net.ipv4.ip_forward=1
 
 systemctl restart networking
+
+mkdir -p /etc/qemu
+
+echo "allow br0
+deny *" > /etc/qemu/bridge.conf

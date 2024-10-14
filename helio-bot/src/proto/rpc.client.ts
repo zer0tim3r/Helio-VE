@@ -5,6 +5,7 @@ import type { RpcTransport } from "@protobuf-ts/runtime-rpc";
 import type { ServiceInfo } from "@protobuf-ts/runtime-rpc";
 import { Helio } from "./rpc";
 import type { StartInstanceArgs } from "./rpc";
+import type { DeleteInstanceArgs } from "./rpc";
 import type { Empty } from "./google/protobuf/empty";
 import type { CreateInstanceArgs } from "./rpc";
 import { stackIntercept } from "@protobuf-ts/runtime-rpc";
@@ -24,6 +25,10 @@ export interface IHelioClient {
      * @generated from protobuf rpc: CreateInstance(rpc.CreateInstanceArgs) returns (google.protobuf.Empty);
      */
     createInstance(input: CreateInstanceArgs, options?: RpcOptions): UnaryCall<CreateInstanceArgs, Empty>;
+    /**
+     * @generated from protobuf rpc: DeleteInstance(rpc.DeleteInstanceArgs) returns (google.protobuf.Empty);
+     */
+    deleteInstance(input: DeleteInstanceArgs, options?: RpcOptions): UnaryCall<DeleteInstanceArgs, Empty>;
     /**
      * @generated from protobuf rpc: StartInstance(rpc.StartInstanceArgs) returns (google.protobuf.Empty);
      */
@@ -53,10 +58,17 @@ export class HelioClient implements IHelioClient, ServiceInfo {
         return stackIntercept<CreateInstanceArgs, Empty>("unary", this._transport, method, opt, input);
     }
     /**
+     * @generated from protobuf rpc: DeleteInstance(rpc.DeleteInstanceArgs) returns (google.protobuf.Empty);
+     */
+    deleteInstance(input: DeleteInstanceArgs, options?: RpcOptions): UnaryCall<DeleteInstanceArgs, Empty> {
+        const method = this.methods[2], opt = this._transport.mergeOptions(options);
+        return stackIntercept<DeleteInstanceArgs, Empty>("unary", this._transport, method, opt, input);
+    }
+    /**
      * @generated from protobuf rpc: StartInstance(rpc.StartInstanceArgs) returns (google.protobuf.Empty);
      */
     startInstance(input: StartInstanceArgs, options?: RpcOptions): UnaryCall<StartInstanceArgs, Empty> {
-        const method = this.methods[2], opt = this._transport.mergeOptions(options);
+        const method = this.methods[3], opt = this._transport.mergeOptions(options);
         return stackIntercept<StartInstanceArgs, Empty>("unary", this._transport, method, opt, input);
     }
 }
