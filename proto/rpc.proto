@@ -31,7 +31,7 @@ message ListInstanceArgs {
 }
 
 message ListInstanceResult {
-    repeated InstanceModel result = 1;
+    repeated InstanceModel instances = 1;
 }
 
 message CreateInstanceArgs {

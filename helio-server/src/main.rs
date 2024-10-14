@@ -50,7 +50,7 @@ impl Helio for RPC {
             .map_err(|e| tonic::Status::from_error(Box::new(e)))?;
 
         Ok(tonic::Response::new(ListInstanceResult {
-            result: instances
+            instances: instances
                 .iter()
                 .map(|i| InstanceModel {
                     uuid: i.uuid.clone(),
