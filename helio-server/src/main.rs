@@ -227,8 +227,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     setup_ipt()?;
 
     // dotenv()?;
-    // let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let client_pg = PGClient::new();
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let client_pg = PGClient::new(database_url);
 
     let port = 8080;
     let addr = format!("0.0.0.0:{}", port).parse().unwrap();

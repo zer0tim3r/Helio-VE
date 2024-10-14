@@ -6,7 +6,8 @@ use std::net::{Ipv4Addr, UdpSocket};
 
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
-    let client_pg = PGClient::new();
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let client_pg = PGClient::new(database_url);
 
     let ipt = iptables::new(false)?;
 

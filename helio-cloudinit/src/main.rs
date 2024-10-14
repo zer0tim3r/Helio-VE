@@ -63,7 +63,8 @@ cloud-init:
 async fn main() -> std::io::Result<()> {
     let port = 8180;
 
-    let client_pg = PGClient::new();
+    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let client_pg = PGClient::new(database_url);
 
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 

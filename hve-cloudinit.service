@@ -9,7 +9,7 @@ Type=simple
 PIDFile=/etc/helio/pids/cloudinit.pid
 ExecStart=/etc/helio/bin/helio-cloudinit
 ExecStop=kill -s SIGEXIT $(cat /etc/helio/pids/cloudinit.pid)
+Environment='DATABASE_URL=postgres://postgres:6e2115148f4ba7e80ca0ce786d17c64f@localhost:5432/helio'
 
 [Install]
 WantedBy=multi-user.target
-Alias=helio-cloudinit.service 

@@ -35,13 +35,3 @@ mkdir -p /etc/qemu
 
 echo "allow br0
 deny *" > /etc/qemu/bridge.conf
-
-cp target/release/helio-server /etc/helio/bin/
-cp target/release/helio-dhcp /etc/helio/bin/
-cp target/release/helio-cloudinit /etc/helio/bin/
-
-cp hve-server.service /etc/systemd/system/
-cp hve-dhcp.service /etc/systemd/system/
-cp hve-cloudinit.service /etc/systemd/system/
-
-cp .env /etc/helio/bin/

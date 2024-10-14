@@ -9,8 +9,7 @@ Type=simple
 PIDFile=/etc/helio/pids/server.pid
 ExecStart=/etc/helio/bin/helio-server
 ExecStop=kill -s SIGEXIT $(cat /etc/helio/pids/server.pid)
-Environment='PORT=8080'
+Environment='DATABASE_URL=postgres://postgres:6e2115148f4ba7e80ca0ce786d17c64f@localhost:5432/helio'
 
 [Install]
 WantedBy=multi-user.target
-Alias=helio-server.service 
