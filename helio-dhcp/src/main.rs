@@ -1,15 +1,12 @@
 use dhcproto::v4::{DhcpOption, Message, MessageType, Opcode, OptionCode};
 use dhcproto::{Decodable, Decoder, Encodable, Encoder};
-use dotenvy::dotenv;
 use helio_pg::{models, PGClient};
 use nix::sys::socket::{setsockopt, sockopt::BindToDevice};
 use std::net::{Ipv4Addr, UdpSocket};
 
 #[tokio::main]
 async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
-    // dotenv()?;
-    // let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let client_pg = PGClient::new("postgres://postgres:6e2115148f4ba7e80ca0ce786d17c64f@localhost:5432/helio".to_string());
+    let client_pg = PGClient::new();
 
     let ipt = iptables::new(false)?;
 

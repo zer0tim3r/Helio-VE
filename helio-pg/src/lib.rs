@@ -17,7 +17,9 @@ pub mod wrapper {
 pub struct PGClient(pub DBPool);
 
 impl PGClient {
-    pub fn new(database_url: String) -> Self {
+    // pub fn new(database_url: String) -> Self {
+    pub fn new() -> Self {
+        let database_url = "postgres://postgres:6e2115148f4ba7e80ca0ce786d17c64f@localhost:5432/helio".to_string();
         let manager = ConnectionManager::<PgConnection>::new(database_url);
         let pool = Pool::builder()
             .max_size(1)

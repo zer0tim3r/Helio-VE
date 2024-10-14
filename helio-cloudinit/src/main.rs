@@ -1,5 +1,4 @@
 use actix_web::*;
-use dotenvy::dotenv;
 use helio_pg::{models, DBPool, PGClient};
 use middleware::Logger;
 
@@ -64,9 +63,7 @@ cloud-init:
 async fn main() -> std::io::Result<()> {
     let port = 8180;
 
-    // dotenv().except("dotenv error");
-    // let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let client_pg = PGClient::new("postgres://postgres:6e2115148f4ba7e80ca0ce786d17c64f@localhost:5432/helio".to_string());
+    let client_pg = PGClient::new();
 
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 
