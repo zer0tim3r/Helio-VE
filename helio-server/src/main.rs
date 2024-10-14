@@ -48,7 +48,17 @@ impl Helio for RPC {
 fn setup_ipt() -> Result<(), Box<dyn std::error::Error>> {
     let ipt = iptables::new(false).unwrap();
 
+    let check_add = |table: &str, chain: &str, rule: &str| -> Result<(), Box<dyn std::error::Error>>{
+        if !ipt.exists(table, chain, rule)? {
+            ipt.append_unique(table, chain, rule)?;
+        }
+
+        Ok(())
+    };
+
     ipt.set_policy("filter", "FORWARD", "DROP")?;
+    check_add("filter", "FORWARD", "! -s 192.168.10.0/24 -j ACCEPT")?;
+    check_add("nat", "PREROUTING", "-d 169.254.169.254 -p tcp --dport 80 -j DNAT --to-destination 192.168.10.254:8180")?;
     
     Ok(())
 }
