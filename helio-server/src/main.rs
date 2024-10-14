@@ -45,15 +45,25 @@ impl Helio for RPC {
     }
 }
 
+fn setup_ipt() -> Result<(), Box<dyn std::error::Error>> {
+    let ipt = iptables::new(false).unwrap();
+
+    ipt.set_policy("filter", "FORWARD", "DROP")?;
+    
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
+
+    setup_ipt()?;
 
     let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let client_pg = PGClient::new(database_url);
 
     let port = 8080;
-    let addr =  format!("0.0.0.0:{}", port).parse().unwrap();
+    let addr = format!("0.0.0.0:{}", port).parse().unwrap();
 
     let server = tokio::spawn(async move {
         let rpc_service = RPC::new(client_pg);

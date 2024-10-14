@@ -11,6 +11,8 @@ prost-types = "0.13.3"
 helio-pg = { path = "../helio-pg" }
 chrono = { version = "0.4.38", features = ["serde"] }
 tokio = { version = "1", features = ["full"] }
+iptables = "0.5.2"
+serde_json = { version = "1.0.128" }
 
 [build-dependencies]
 tonic-build = "0.12.3"
