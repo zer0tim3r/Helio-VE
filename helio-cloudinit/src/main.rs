@@ -62,12 +62,11 @@ cloud-init:
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    dotenv().expect("dotenv error");
-
     let port = 8180;
 
-    let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    let client_pg = PGClient::new(database_url);
+    // dotenv().except("dotenv error");
+    // let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let client_pg = PGClient::new("postgres://postgres:6e2115148f4ba7e80ca0ce786d17c64f@localhost:5432/helio".to_string());
 
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 

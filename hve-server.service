@@ -8,7 +8,7 @@ Restart=always
 Type=simple
 PIDFile=/etc/helio/pids/server.pid
 ExecStart=/etc/helio/bin/helio-server
-ExecStop=kill -s SIGEXIT $(cat /opt/helio-ve/var/main.pid)
+ExecStop=kill -s SIGEXIT $(cat /etc/helio/pids/server.pid)
 Environment='PORT=8080'
 
 [Install]

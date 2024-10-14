@@ -12,32 +12,32 @@ let gRPC = new HelioClient(new GrpcTransport({
     const uuid = "4eb120b9-4483-4a8d-a9b2-f57ab9272699";
     console.log(uuid)
 
-    // var response = await gRPC.createInstance({ 
-    //     uuid,
-    //     itype: 0,
-    //     image: 0,
-    //     createdBy: "823554839911989280" 
-    // }).then(r => r.response, e => { throw e; });
-
-    // console.log(response)
-
-    // var response = await gRPC.listInstance({
-    //     createdBy: "823554839911989280"
-    // }).then(r => r.response, e => { throw e; });
-
-    // console.log(response)
-
-    // var response = await gRPC.startInstance({
-    //     uuid,
-    //     createdBy: "823554839911989280"
-    // }).then(r => r.response, e => ({ error: e }));
-
-    // console.log(response)
-
-    var response = await gRPC.deleteInstance({
+    var response = await gRPC.createInstance({ 
         uuid,
+        itype: 0,
+        image: 0,
+        createdBy: "823554839911989280" 
+    }).then(r => r.response, e => { throw e; });
+
+    console.log(response)
+
+    var response = await gRPC.listInstance({
         createdBy: "823554839911989280"
     }).then(r => r.response, e => { throw e; });
 
     console.log(response)
+
+    var response = await gRPC.startInstance({
+        uuid,
+        createdBy: "823554839911989280"
+    }).then(r => r.response, e => ({ error: e }));
+
+    console.log(response)
+
+    // var response = await gRPC.deleteInstance({
+    //     uuid,
+    //     createdBy: "823554839911989280"
+    // }).then(r => r.response, e => { throw e; });
+
+    // console.log(response)
 })()

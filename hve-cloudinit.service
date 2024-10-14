@@ -1,0 +1,15 @@
+[Unit]
+Description=HVE cloudinit
+After=network.target
+Wants=network-online.target
+
+[Service]
+Restart=always
+Type=simple
+PIDFile=/etc/helio/pids/cloudinit.pid
+ExecStart=/etc/helio/bin/helio-cloudinit
+ExecStop=kill -s SIGEXIT $(cat /etc/helio/pids/cloudinit.pid)
+
+[Install]
+WantedBy=multi-user.target
+Alias=helio-cloudinit.service 

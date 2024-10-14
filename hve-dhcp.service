@@ -1,0 +1,15 @@
+[Unit]
+Description=HVE dhcp
+After=network.target
+Wants=network-online.target
+
+[Service]
+Restart=always
+Type=simple
+PIDFile=/etc/helio/pids/dhcp.pid
+ExecStart=/etc/helio/bin/helio-dhcp
+ExecStop=kill -s SIGEXIT $(cat /opt/helio-ve/var/dhcp.pid)
+
+[Install]
+WantedBy=multi-user.target
+Alias=helio-dhcp.service 
