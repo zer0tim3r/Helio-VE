@@ -6,7 +6,7 @@
   "packageManager": "yarn@4.5.0",
   "scripts": {
     "build": "tsc -p . && tsc-alias",
-    "build:proto": "yarn dlx protoc --ts_out ./src/proto --proto_path ./src/proto ./src/proto/user.proto",
+    "build:proto": "yarn dlx protoc --ts_out ./src/proto --proto_path ../proto ../proto/rpc.proto",
     "start": "node ./dist/index.js | pino-pretty",
     "dev": "DEV=1 ts-node-dev --respawn --transpile-only -r tsconfig-paths/register ./src/index.ts | pino-pretty",
     "dev:test": "DEV=1 ts-node-dev --respawn --transpile-only -r tsconfig-paths/register ./src/test.ts | pino-pretty"

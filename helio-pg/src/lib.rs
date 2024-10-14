@@ -8,6 +8,11 @@ pub type DBPool = Pool<ConnectionManager<PgConnection>>;
 pub type Timestamp = chrono::NaiveDateTime;
 pub type Timestamptz = chrono::DateTime<chrono::Utc>;
 
+pub type PGConn = PgConnection;
+
+pub use diesel::result::Error::DatabaseError;
+pub use diesel::result::DatabaseErrorKind;
+
 pub struct PGClient(pub DBPool);
 
 impl PGClient {
