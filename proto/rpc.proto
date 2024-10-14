@@ -9,7 +9,8 @@ service Helio {
     rpc ListInstance (ListInstanceArgs) returns (ListInstanceResult);
     rpc CreateInstance (CreateInstanceArgs) returns (google.protobuf.Empty);
     rpc DeleteInstance (DeleteInstanceArgs) returns (google.protobuf.Empty);
-    rpc StartInstance (StartInstanceArgs) returns (google.protobuf.Empty);
+    rpc StartInstance (ProcessInstanceArgs) returns (google.protobuf.Empty);
+    rpc StopInstance (ProcessInstanceArgs) returns (google.protobuf.Empty);
 }
 
 
@@ -47,7 +48,7 @@ message DeleteInstanceArgs {
     string created_by = 2;
 }
 
-message StartInstanceArgs {
+message ProcessInstanceArgs {
     string uuid = 1;
     string created_by = 2;
 }

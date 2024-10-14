@@ -123,7 +123,7 @@ pub fn start_instance(
         Ok(pid) => {
             let s = System::new_all();
             if s.process(Pid::from(pid as usize)).is_some() {
-                return Err("Process Running".into());
+                return Err("Instance is already running".into());
             }
         }
         Err(_) => (),
@@ -185,6 +185,24 @@ pub fn start_instance(
     }
 
     Ok(())
+}
+
+pub fn stop_instance(
+    instance: Instance,
+) -> Result<(), Box<(dyn std::error::Error + Send + Sync + 'static)>> {
+    let pid = read_pid(format!("/etc/helio/pids/{}.pid", instance.uuid).as_str())
+        .map_err(|_| "Instance is not started")?;
+
+    let s = System::new_all();
+    let process = s.process(Pid::from(pid as usize));
+    if process.is_none() {
+        return Err("Instance is not started".into());
+    }
+
+    match process.unwrap().kill() {
+        true => Ok(()),
+        false => Err("Cannot kill instance".into())
+    }
 }
 
 fn read_pid(file_path: &str) -> Result<i32, Box<dyn std::error::Error>> {

@@ -176,7 +176,7 @@ impl Helio for RPC {
 
     async fn start_instance(
         &self,
-        request: tonic::Request<StartInstanceArgs>,
+        request: tonic::Request<ProcessInstanceArgs>,
     ) -> Result<tonic::Response<()>, tonic::Status> {
         println!("Received Instance start request: {:?}", request);
 
@@ -193,6 +193,29 @@ impl Helio for RPC {
                 .map_err(|e| tonic::Status::from_error(Box::new(e)))?;
 
         qemu_kvm::start_instance(instance).map_err(|e| tonic::Status::from_error(e))?;
+
+        Ok(tonic::Response::new(()))
+    }
+
+    async fn stop_instance(
+        &self,
+        request: tonic::Request<ProcessInstanceArgs>,
+    ) -> Result<tonic::Response<()>, tonic::Status> {
+        println!("Received Instance stop request: {:?}", request);
+
+        let conn = &mut self
+            .client_pg
+            .0
+            .get()
+            .map_err(|e| tonic::Status::from_error(Box::new(e)))?;
+
+        let args = request.into_inner();
+
+        let instance =
+            models::instance::Instance::_default_get_by_uuid(conn, args.uuid, args.created_by)
+                .map_err(|e| tonic::Status::from_error(Box::new(e)))?;
+
+        qemu_kvm::stop_instance(instance).map_err(|e| tonic::Status::from_error(e))?;
 
         Ok(tonic::Response::new(()))
     }
