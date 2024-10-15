@@ -4,7 +4,7 @@ use helio_pg::models::instance::Instance;
 
 use sysinfo::{Pid, System};
 
-use crate::common;
+use crate::{common, InstanceState};
 
 struct InstanceType {
     pub cpu: i32,
@@ -203,6 +203,22 @@ pub fn stop_instance(
         true => Ok(()),
         false => Err("Cannot kill instance".into())
     }
+}
+
+pub fn status_instance(
+    instance: Instance,
+) -> InstanceState {
+    match read_pid(format!("/etc/helio/pids/{}.pid", instance.uuid).as_str()) {
+        Ok(pid) => {
+            let s = System::new_all();
+            if s.process(Pid::from(pid as usize)).is_some() {
+                return InstanceState::InstanceRunning;
+            }
+        }
+        Err(_) => (),
+    }
+
+    InstanceState::InstanceNone
 }
 
 fn read_pid(file_path: &str) -> Result<i32, Box<dyn std::error::Error>> {

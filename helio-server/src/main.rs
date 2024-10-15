@@ -1,6 +1,7 @@
 use std::net::Ipv4Addr;
 
 use helio_pg::{models, wrapper, PGClient};
+use qemu_kvm::status_instance;
 use rand::Rng;
 
 mod common;
@@ -51,7 +52,7 @@ impl Helio for RPC {
 
         Ok(tonic::Response::new(ListInstanceResult {
             instances: instances
-                .iter()
+                .into_iter()
                 .map(|i| InstanceModel {
                     uuid: i.uuid.clone(),
                     label: i.label.clone(),
@@ -62,6 +63,7 @@ impl Helio for RPC {
                     created_by: i.created_by.clone(),
                     created_at: Some(to_timestamp(i.created_at)),
                     updated_at: Some(to_timestamp(i.updated_at)),
+                    state: status_instance(i) as i32,
                 })
                 .collect(),
         }))

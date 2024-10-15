@@ -22,6 +22,10 @@ impl EventHandler for Handler {
                     commands::list::run(&ctx, &command).await.unwrap();
                     None
                 }
+                "start" => {
+                    commands::start::run(&ctx, &command).await.unwrap();
+                    None
+                }
                 _ => Some("not implemented :(".to_string()),
             };
 
@@ -46,7 +50,7 @@ impl EventHandler for Handler {
         );
 
         let commands = guild_id
-            .set_commands(&ctx.http, vec![commands::list::register()])
+            .set_commands(&ctx.http, vec![commands::list::register(), commands::start::register()])
             .await;
 
         println!("I now have the following guild slash commands: {commands:#?}");
