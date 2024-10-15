@@ -18,18 +18,17 @@ pub async fn run(
         _ => "",
     };
 
-    let mut message = CreateInteractionResponseMessage::new()
-        .ephemeral(true);
+    let mut message = CreateInteractionResponseMessage::new().ephemeral(true);
 
     match client_rpc
-        .start_instance(FilterInstanceArgs {
+        .delete_instance(FilterInstanceArgs {
             uuid: uuid.to_string(),
             created_by: interaction.user.id.to_string(),
         })
         .await
     {
-        Ok(_) => message = message.content(format!("Started instance : {}", uuid.to_string())),
-        Err(e) => message = message.content(format!("Cannot start instance : {}", e.message())),
+        Ok(_) => message = message.content(format!("Deleted instance : {}", uuid.to_string())),
+        Err(e) => message = message.content(format!("Cannot delete instance : {}", e.message())),
     }
 
     interaction
@@ -41,10 +40,10 @@ pub async fn run(
 }
 
 pub fn register() -> CreateCommand {
-    CreateCommand::new("start")
+    CreateCommand::new("delete")
         .add_option(
             CreateCommandOption::new(CommandOptionType::String, "uuid", "Instance UUID")
                 .required(true),
         )
-        .description("Start instance by uuid")
+        .description("Delete instance by uuid")
 }

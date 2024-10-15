@@ -2,7 +2,7 @@ use serenity::builder::*;
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 
-use crate::{GRPClient, InstanceState, ListInstanceArgs};
+use crate::{GRPClient, InstanceState, ListInstanceArgs, ListInstanceResult};
 
 pub async fn run(
     ctx: &Context,
@@ -11,12 +11,15 @@ pub async fn run(
     let data = ctx.data.read().await;
     let mut client_rpc = data.get::<GRPClient>().unwrap().clone();
 
-    let result = client_rpc
+    let result = match client_rpc
         .list_instance(ListInstanceArgs {
             created_by: interaction.user.id.to_string(),
         })
-        .await?
-        .into_inner();
+        .await
+    {
+        Ok(v) => v.into_inner(),
+        Err(_) => ListInstanceResult { instances: vec![] },
+    };
 
     let mut message = CreateInteractionResponseMessage::new()
         .content(format!("My Instances : {}", result.instances.len()))
@@ -31,12 +34,18 @@ pub async fn run(
                 .field("MAC", i.mac.clone(), false)
                 .field("IPv4", i.ipv4.clone(), false)
                 .field("CreatedAt", i.created_at.unwrap().to_string(), false)
-                .field("State", match i.state {
-                    0 => Some(InstanceState::InstanceNone),
-                    1 => Some(InstanceState::InstanceRunning),
-                    2 => Some(InstanceState::InstanceSuspended),
-                    _ => None
-                }.unwrap_or(InstanceState::InstanceNone).as_str_name(), false)
+                .field(
+                    "State",
+                    match i.state {
+                        0 => Some(InstanceState::InstanceNone),
+                        1 => Some(InstanceState::InstanceRunning),
+                        2 => Some(InstanceState::InstanceSuspended),
+                        _ => None,
+                    }
+                    .unwrap_or(InstanceState::InstanceNone)
+                    .as_str_name(),
+                    false,
+                ),
         );
     }
 

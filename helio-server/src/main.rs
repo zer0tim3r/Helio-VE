@@ -156,7 +156,7 @@ impl Helio for RPC {
 
     async fn delete_instance(
         &self,
-        request: tonic::Request<DeleteInstanceArgs>,
+        request: tonic::Request<FilterInstanceArgs>,
     ) -> Result<tonic::Response<()>, tonic::Status> {
         println!("Received Instance delete request: {:?}", request);
 
@@ -178,7 +178,7 @@ impl Helio for RPC {
 
     async fn start_instance(
         &self,
-        request: tonic::Request<ProcessInstanceArgs>,
+        request: tonic::Request<FilterInstanceArgs>,
     ) -> Result<tonic::Response<()>, tonic::Status> {
         println!("Received Instance start request: {:?}", request);
 
@@ -201,7 +201,7 @@ impl Helio for RPC {
 
     async fn stop_instance(
         &self,
-        request: tonic::Request<ProcessInstanceArgs>,
+        request: tonic::Request<FilterInstanceArgs>,
     ) -> Result<tonic::Response<()>, tonic::Status> {
         println!("Received Instance stop request: {:?}", request);
 

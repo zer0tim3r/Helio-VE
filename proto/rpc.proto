@@ -8,9 +8,9 @@ package rpc;
 service Helio {
     rpc ListInstance (ListInstanceArgs) returns (ListInstanceResult);
     rpc CreateInstance (CreateInstanceArgs) returns (google.protobuf.Empty);
-    rpc DeleteInstance (DeleteInstanceArgs) returns (google.protobuf.Empty);
-    rpc StartInstance (ProcessInstanceArgs) returns (google.protobuf.Empty);
-    rpc StopInstance (ProcessInstanceArgs) returns (google.protobuf.Empty);
+    rpc DeleteInstance (FilterInstanceArgs) returns (google.protobuf.Empty);
+    rpc StartInstance (FilterInstanceArgs) returns (google.protobuf.Empty);
+    rpc StopInstance (FilterInstanceArgs) returns (google.protobuf.Empty);
 }
 
 enum InstanceState {
@@ -50,12 +50,7 @@ message CreateInstanceArgs {
     string created_by = 5;
 }
 
-message DeleteInstanceArgs {
-    string uuid = 1;
-    string created_by = 2;
-}
-
-message ProcessInstanceArgs {
+message FilterInstanceArgs {
     string uuid = 1;
     string created_by = 2;
 }

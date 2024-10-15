@@ -35,7 +35,12 @@ const INSTANCE_TYPES: [InstanceType; 4] = [
     },
 ];
 
-const INSTANCE_IMAGES: [&str; 1] = ["Arch-Linux-x86_64-cloudimg.qcow2"];
+const INSTANCE_IMAGES: [&str; 4] = [
+    "Ubuntu-24.04-cloudimg-amd64.qcow2",
+    "debian-12-generic-amd64.qcow2",
+    "Rocky-9-GenericCloud-Base.latest.x86_64.qcow2",
+    "Arch-Linux-x86_64-cloudimg.qcow2",
+];
 
 pub fn create_instance(
     instance: Instance,
@@ -109,9 +114,10 @@ pub fn delete_instance(
     )
     .map_err(|e| e.to_string())?;
 
-    std::fs::remove_file(format!("/etc/helio/pids/{}.pid", instance.uuid)).unwrap();
-    std::fs::remove_file(format!("/etc/helio/socket/{}.vnc", instance.uuid)).unwrap();
-    std::fs::remove_file(format!("/etc/helio/disks/{}.qcow2", instance.uuid)).unwrap();
+    let _ = std::fs::remove_file(format!("/etc/helio/disks/{}.qcow2", instance.uuid));
+    let _ = std::fs::remove_file(format!("/etc/helio/socket/{}.vnc", instance.uuid));
+    let _ = std::fs::remove_file(format!("/etc/helio/socket/{}.qmp", instance.uuid));
+    let _ = std::fs::remove_file(format!("/etc/helio/pids/{}.pid", instance.uuid));
 
     Ok(())
 }
