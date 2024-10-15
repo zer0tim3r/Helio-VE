@@ -1,3 +1,3 @@
 [workspace]
 resolver = "2"
-members = [ "helio-pg", "helio-server", "helio-cloudinit" , "helio-dhcp" , "helio-bot" ]
+members = [ "helio-pg", "helio-server", "helio-cloudinit" , "helio-dhcp" , "helio-ui" ]

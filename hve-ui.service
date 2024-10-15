@@ -1,0 +1,15 @@
+[Unit]
+Description=HVE UI
+After=network.target
+Wants=network-online.target
+
+[Service]
+Restart=always
+Type=simple
+PIDFile=/etc/helio/pids/ui.pid
+ExecStart=/etc/helio/bin/helio-ui
+ExecStop=kill -s SIGEXIT $(cat /etc/helio/pids/ui.pid)
+Environment=''
+
+[Install]
+WantedBy=multi-user.target
