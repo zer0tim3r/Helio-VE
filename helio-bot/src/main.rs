@@ -15,7 +15,7 @@ struct Handler;
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::Command(command) = interaction {
-            println!("Received command interaction: {command:#?}");
+            // println!("Received command interaction: {command:#?}");
 
             let content = match command.data.name.as_str() {
                 "list" => {
@@ -51,9 +51,9 @@ impl EventHandler for Handler {
 
         let commands = guild_id
             .set_commands(&ctx.http, vec![commands::list::register(), commands::start::register()])
-            .await;
+            .await.unwrap();
 
-        println!("I now have the following guild slash commands: {commands:#?}");
+        println!("I now have the following guild slash commands: {:?}", commands.iter().map(|c| c.name.to_string()).collect::<Vec<_>>());
 
         // let guild_command =
         //     Command::create_global_command(&ctx.http, commands::wonderful_command::register())
