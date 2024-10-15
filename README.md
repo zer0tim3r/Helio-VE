@@ -4,3 +4,4 @@
 - Cargo (rustup.rs)
 - iptables
 - qemu-kvm
+- bridge-utils
